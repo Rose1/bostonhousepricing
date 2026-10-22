@@ -12,3 +12,9 @@ Create a new environment
 ```
 conda create -p venv python==3.7 -y
 ```
+
+### Heroku Live App
+
+```
+https://boston-house-price-prediction-e71049787be4.herokuapp.com/
+```
