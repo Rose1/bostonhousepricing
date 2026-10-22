@@ -1,45 +1,530 @@
 <!DOCTYPE html>
-<html >
+<html lang="en">
 
 <head>
   <meta charset="UTF-8">
-  <title>ML API</title>
-  <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css'>
-<link href='https://fonts.googleapis.com/css?family=Arimo' rel='stylesheet' type='text/css'>
-<link href='https://fonts.googleapis.com/css?family=Hind:300' rel='stylesheet' type='text/css'>
-<link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300' rel='stylesheet' type='text/css'>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Boston House Price Prediction</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
 
-  
+  <style>
+    :root {
+      --paper: #EEF2F5;
+      --surface: #FFFFFF;
+      --ink: #13263F;
+      --muted: #4A5B70;
+      --rule: #C3CFDA;
+      --harbor: #2E6E78;
+      --brick: #A4412F;
+      --brick-tint: #F7E9E5;
+      --display: "Bricolage Grotesque", "Segoe UI", Arial, sans-serif;
+      --body: "Source Sans 3", "Segoe UI", Arial, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--body);
+      font-size: 1.0625rem;
+      line-height: 1.55;
+    }
+
+    a { color: inherit; }
+
+    :focus-visible {
+      outline: 3px solid var(--harbor);
+      outline-offset: 2px;
+    }
+
+    /* ---------- Layout ---------- */
+    .page {
+      display: grid;
+      grid-template-columns: 1fr;
+      min-height: 100vh;
+    }
+
+    .intro {
+      background: var(--ink);
+      color: #F3F6F9;
+      padding: 2.5rem 1.5rem;
+    }
+
+    .intro-inner { max-width: 32rem; }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border: 1px solid #7FB3BA;
+      border-radius: 999px;
+      color: #BFE0E4;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .intro h1 {
+      margin: 1.25rem 0 1rem;
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: clamp(2.25rem, 6vw, 3.5rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+    }
+
+    .intro p { margin: 0 0 1rem; color: #D5DEE8; }
+
+    .intro .learning-note {
+      margin-top: 2rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid #3A4F6B;
+      font-size: 0.98rem;
+    }
+
+    .intro .learning-note a { color: #BFE0E4; }
+
+    .main {
+      padding: 2rem 1.5rem 3rem;
+    }
+
+    .main-inner { max-width: 46rem; margin: 0 auto; }
+
+    @media (min-width: 960px) {
+      .page { grid-template-columns: 26rem 1fr; }
+
+      .intro {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        padding: 3.5rem 3rem;
+        overflow-y: auto;
+      }
+
+      .main { padding: 3.5rem 3.5rem 4rem; }
+    }
+
+    /* ---------- Result ---------- */
+    .result {
+      margin-bottom: 2.5rem;
+      padding: 1.5rem 1.75rem;
+      background: var(--surface);
+      border-left: 8px solid var(--brick);
+      border-radius: 4px;
+    }
+
+    .result .label {
+      margin: 0;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .result .value {
+      margin: 0.25rem 0 0.5rem;
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: clamp(1.75rem, 5vw, 2.75rem);
+      line-height: 1.15;
+      color: var(--brick);
+    }
+
+    .result .note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    /* ---------- Form ---------- */
+    .form-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-head h2,
+    .issues h2 {
+      margin: 0;
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 1.75rem;
+      letter-spacing: -0.01em;
+    }
+
+    .form-lead {
+      max-width: 38rem;
+      margin: 0 0 2rem;
+      color: var(--muted);
+    }
+
+    .btn-ghost {
+      padding: 0.55rem 1rem;
+      background: transparent;
+      color: var(--harbor);
+      border: 2px solid var(--harbor);
+      border-radius: 6px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-ghost:hover { background: var(--harbor); color: #fff; }
+
+    fieldset {
+      margin: 0 0 2rem;
+      padding: 1.25rem 0 0;
+      border: 0;
+      border-top: 2px solid var(--ink);
+    }
+
+    legend {
+      padding: 0 0.75rem 0 0;
+      font-family: var(--display);
+      font-weight: 600;
+      font-size: 1.2rem;
+    }
+
+    .group-note {
+      margin: 0.25rem 0 1.25rem;
+      color: var(--muted);
+      font-size: 0.97rem;
+    }
+
+    .fields {
+      display: grid;
+      gap: 1.5rem 1.75rem;
+      grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 640px) {
+      .fields { grid-template-columns: 1fr 1fr; }
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 0.35rem;
+      font-weight: 600;
+    }
+
+    .field .code {
+      margin-left: 0.4rem;
+      padding: 0.05rem 0.45rem;
+      background: #DCE5EC;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      padding: 0.7rem 0.85rem;
+      background: var(--surface);
+      color: var(--ink);
+      border: 2px solid var(--rule);
+      border-radius: 6px;
+      font: inherit;
+    }
+
+    .field input:focus,
+    .field select:focus { border-color: var(--harbor); }
+
+    .field input::placeholder { color: #8796A8; }
+
+    .hint {
+      margin: 0.35rem 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.4;
+    }
+
+    .field.flagged input { border-color: var(--brick); }
+
+    .field.flagged .code {
+      background: var(--brick-tint);
+      color: var(--brick);
+    }
+
+    .flag-link {
+      display: inline-block;
+      margin-top: 0.35rem;
+      color: var(--brick);
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      background: var(--brick);
+      color: #fff;
+      border: 0;
+      border-radius: 8px;
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover { background: #8B3223; }
+
+    /* ---------- Known issues ---------- */
+    .issues {
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 2px solid var(--ink);
+    }
+
+    .issues .lead { max-width: 40rem; margin: 0.75rem 0 2rem; }
+
+    .issue {
+      max-width: 40rem;
+      margin: 0 0 1.75rem;
+      padding-left: 1.25rem;
+      border-left: 4px solid var(--rule);
+    }
+
+    .issue.serious { border-left-color: var(--brick); }
+
+    .issue h3 {
+      margin: 0 0 0.35rem;
+      font-family: var(--display);
+      font-weight: 600;
+      font-size: 1.2rem;
+    }
+
+    .issue p { margin: 0; }
+
+    .closing {
+      max-width: 40rem;
+      margin-top: 2.5rem;
+      padding: 1.25rem 1.5rem;
+      background: var(--surface);
+      border-radius: 4px;
+    }
+
+    .closing p { margin: 0; }
+
+    footer {
+      margin-top: 2.5rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+  </style>
 </head>
 
 <body>
- <div class="login">
-	<h1>Boston House Price Prediction</h1>
+  <div class="page">
 
-     <!-- Main Input For Receiving Query to our ML -->
-    <form action="{{ url_for('predict')}}"method="post">
-      <input type="text" name="CRIM" placeholder="CRIM" required="required" /><br>
-    	<input type="text" name="ZN" placeholder="ZN" required="required" /><br>
-        <input type="text" name="INDUS" placeholder="INDUS" required="required" /><br>
-        <input type="text" name="CHAS" placeholder="CHAS" required="required" /><br>
-        <input type="text" name="NOX" placeholder="NOX" required="required" /><br>
-        <input type="text" name="RM" placeholder="RM" required="required" /><br>
-        <input type="text" name="Age" placeholder="Age" required="required" /><br>
-        <input type="text" name="DIS" placeholder="DIS" required="required" /><br>
-        <input type="text" name="RAD" placeholder="RAD" required="required" /><br>
-        <input type="text" name="TAX" placeholder="TAX" required="required" /><br>
-        <input type="text" name="PTRATIO" placeholder="PTRATIO" required="required" /><br>
-        <input type="text" name="B" placeholder="B" required="required" /><br>
-        <input type="text" name="LSTAT" placeholder="LSTAT" required="required" /><br>
+    <!-- Left panel -->
+    <aside class="intro">
+      <div class="intro-inner">
+        <span class="badge">Learning project</span>
+        <h1>Boston House Price Prediction</h1>
+        <p>Enter the characteristics of a Boston-area census tract and a regression model will estimate the median value of its homes.</p>
+        <p>The model learns from 13 features of the Boston Housing dataset, described next to each field in the form.</p>
+        <p class="learning-note">
+          This project was made for learning purposes only. Two of its features are ethically problematic, so please read the
+          <a href="#known-issues">known issues</a> before trusting any result.
+        </p>
+      </div>
+    </aside>
 
-        <button type="submit" class="btn btn-primary btn-block btn-large">Predict</button>
-    </form>
+    <!-- Main content -->
+    <main class="main">
+      <div class="main-inner">
 
-   <br>
-   <br>
-   
- </div>
- {{prediction_text}}
+        {% if prediction_text %}
+        <section class="result" id="result" role="status" aria-live="polite">
+          <p class="label">Model estimate</p>
+          <p class="value">{{ prediction_text }}</p>
+          <p class="note">The dataset prices homes in thousands of US dollars from the 1970s. This is not a real appraisal.</p>
+        </section>
+        {% endif %}
 
+        <div class="form-head">
+          <h2>Tract details</h2>
+          <button type="button" class="btn-ghost" id="fill-example">Use example values</button>
+        </div>
+        <p class="form-lead">Fill in all 13 fields. The example values come from the first row of the dataset.</p>
+
+        <!-- Main input for receiving the query to our ML model -->
+        <form action="{{ url_for('predict') }}" method="post">
+
+          <fieldset>
+            <legend>The home</legend>
+            <div class="fields">
+              <div class="field">
+                <label for="RM">Average rooms <span class="code">RM</span></label>
+                <input type="number" step="any" id="RM" name="RM" placeholder="6.575" required aria-describedby="RM-hint">
+                <p class="hint" id="RM-hint">Average number of rooms per dwelling.</p>
+              </div>
+              <div class="field">
+                <label for="Age">Older homes <span class="code">Age</span></label>
+                <input type="number" step="any" id="Age" name="Age" placeholder="65.2" required aria-describedby="Age-hint">
+                <p class="hint" id="Age-hint">Percent of owner-occupied units built before 1940.</p>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Land and environment</legend>
+            <div class="fields">
+              <div class="field">
+                <label for="ZN">Large residential lots <span class="code">ZN</span></label>
+                <input type="number" step="any" id="ZN" name="ZN" placeholder="18" required aria-describedby="ZN-hint">
+                <p class="hint" id="ZN-hint">Percent of residential land zoned for lots over 25,000 sq. ft.</p>
+              </div>
+              <div class="field">
+                <label for="INDUS">Non-retail business <span class="code">INDUS</span></label>
+                <input type="number" step="any" id="INDUS" name="INDUS" placeholder="2.31" required aria-describedby="INDUS-hint">
+                <p class="hint" id="INDUS-hint">Percent of the town's acres used by non-retail business.</p>
+              </div>
+              <div class="field">
+                <label for="CHAS">Charles River <span class="code">CHAS</span></label>
+                <select id="CHAS" name="CHAS" required aria-describedby="CHAS-hint">
+                  <option value="" disabled selected>Select an option</option>
+                  <option value="0">0 – Does not border the river</option>
+                  <option value="1">1 – Borders the river</option>
+                </select>
+                <p class="hint" id="CHAS-hint">Whether the tract borders the Charles River.</p>
+              </div>
+              <div class="field">
+                <label for="NOX">Air pollution <span class="code">NOX</span></label>
+                <input type="number" step="any" id="NOX" name="NOX" placeholder="0.538" required aria-describedby="NOX-hint">
+                <p class="hint" id="NOX-hint">Nitric oxides concentration, in parts per 10 million.</p>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Neighborhood</legend>
+            <div class="fields">
+              <div class="field">
+                <label for="CRIM">Crime rate <span class="code">CRIM</span></label>
+                <input type="number" step="any" id="CRIM" name="CRIM" placeholder="0.00632" required aria-describedby="CRIM-hint">
+                <p class="hint" id="CRIM-hint">Per capita crime rate by town.</p>
+              </div>
+              <div class="field">
+                <label for="DIS">Distance to jobs <span class="code">DIS</span></label>
+                <input type="number" step="any" id="DIS" name="DIS" placeholder="4.09" required aria-describedby="DIS-hint">
+                <p class="hint" id="DIS-hint">Weighted distance to five Boston employment centres.</p>
+              </div>
+              <div class="field">
+                <label for="RAD">Highway access <span class="code">RAD</span></label>
+                <input type="number" step="1" id="RAD" name="RAD" placeholder="1" required aria-describedby="RAD-hint">
+                <p class="hint" id="RAD-hint">Index of accessibility to radial highways.</p>
+              </div>
+              <div class="field">
+                <label for="TAX">Property tax <span class="code">TAX</span></label>
+                <input type="number" step="any" id="TAX" name="TAX" placeholder="296" required aria-describedby="TAX-hint">
+                <p class="hint" id="TAX-hint">Full-value property tax rate per $10,000.</p>
+              </div>
+              <div class="field">
+                <label for="PTRATIO">Pupil-teacher ratio <span class="code">PTRATIO</span></label>
+                <input type="number" step="any" id="PTRATIO" name="PTRATIO" placeholder="15.3" required aria-describedby="PTRATIO-hint">
+                <p class="hint" id="PTRATIO-hint">Pupils per teacher, by town.</p>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Demographic variables</legend>
+            <p class="group-note">These two features are included only because the original dataset has them. Both are ethically problematic.</p>
+            <div class="fields">
+              <div class="field flagged">
+                <label for="B">Racial composition index <span class="code">B</span></label>
+                <input type="number" step="any" id="B" name="B" placeholder="396.9" required aria-describedby="B-hint">
+                <p class="hint" id="B-hint">Derived from the proportion of Black residents in the town.</p>
+                <a class="flag-link" href="#known-issues">Why this is a problem</a>
+              </div>
+              <div class="field flagged">
+                <label for="LSTAT">"Lower status" population <span class="code">LSTAT</span></label>
+                <input type="number" step="any" id="LSTAT" name="LSTAT" placeholder="4.98" required aria-describedby="LSTAT-hint">
+                <p class="hint" id="LSTAT-hint">Percent of the population labeled "lower status".</p>
+                <a class="flag-link" href="#known-issues">Why this is a problem</a>
+              </div>
+            </div>
+          </fieldset>
+
+          <button type="submit" class="btn-primary">Predict price</button>
+        </form>
+
+        <!-- Controversies -->
+        <section class="issues" id="known-issues">
+          <h2>Known issues with this dataset</h2>
+          <p class="lead">
+            The Boston Housing dataset was assembled in 1978 for a study on how air quality affects housing prices.
+            It became a classic in machine learning tutorials, but it carries problems that this project does not fix.
+            scikit-learn has since removed it from its library for these reasons.
+          </p>
+
+          <div class="issue serious">
+            <h3>B: a variable built on racial assumptions</h3>
+            <p>
+              B is calculated as 1000(Bk − 0.63)², where Bk is the proportion of Black residents in a town.
+              It rests on the assumption that racial self-segregation raises house values. Using it as a predictor
+              builds racial discrimination into the model.
+            </p>
+          </div>
+
+          <div class="issue serious">
+            <h3>LSTAT: people reduced to a class label</h3>
+            <p>
+              LSTAT is the percentage of the population considered "lower status", a label based on education and occupation.
+              It reduces people to a socioeconomic category and can act as a stand-in for poverty and race.
+            </p>
+          </div>
+
+          <div class="issue">
+            <h3>Old and small data</h3>
+            <p>
+              The data comes from the 1970s and covers only 506 tracts around Boston. Prices are in 1970s dollars,
+              so the predictions say nothing about today's housing market.
+            </p>
+          </div>
+
+          <div class="closing">
+            <p>
+              <strong>A model trained on this data can reproduce historical bias.</strong>
+              This project was made for learning purposes only, to practice the full machine learning workflow from
+              data to deployment. Its predictions must not be used for real decisions about housing, lending, or people.
+            </p>
+          </div>
+        </section>
+
+        <footer>
+          Built with Python, Scikit-learn, Flask and Docker.
+        </footer>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Fill the form with the first row of the dataset
+    var example = {
+      CRIM: 0.00632, ZN: 18, INDUS: 2.31, CHAS: 0, NOX: 0.538, RM: 6.575,
+      Age: 65.2, DIS: 4.09, RAD: 1, TAX: 296, PTRATIO: 15.3, B: 396.9, LSTAT: 4.98
+    };
+
+    document.getElementById('fill-example').addEventListener('click', function () {
+      Object.keys(example).forEach(function (name) {
+        var field = document.querySelector('[name="' + name + '"]');
+        if (field) { field.value = example[name]; }
+      });
+    });
+
+    // After a prediction, bring the result into view
+    var result = document.getElementById('result');
+    if (result) { result.scrollIntoView({ block: 'start' }); }
+  </script>
 </body>
+
 </html>
